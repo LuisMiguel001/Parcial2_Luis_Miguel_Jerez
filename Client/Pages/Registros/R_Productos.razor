@@ -1,0 +1,109 @@
+﻿@page "/Producto"
+@inject HttpClient httpClient
+@inject NotificationService notificationService
+
+<EditForm Model="productoId" OnValidSubmit="Guardar">
+	<DataAnnotationsValidator />
+
+	<div class="container">
+		<div class="card shadow-lg">
+			<div class="card-header">
+				<h3>Registro de productos</h3>
+			</div>
+			<div class="card-body">
+				@*Buscar*@
+				<div class="col-xs-12 col-ms-12 col-md-8 col-lg-6 col-lx-4">
+					<InputNumber @bind-Value="producto.ProductoId" class="form-control" aria-describedby="buscarButton" />
+					<button @onclick="Buscar" class="btn btn-outline-primary" type="button" id="buscarButton">
+						<i class="oi oi-magnifying-glass"/>
+					</button>
+				</div>
+			</div>
+
+			<div class="card-footer d-flex justify-content-center">
+				<div class="btn-group" role="group">
+					<button type="button" class="btn btn-primary" @onclick="Nuevo"> <i class="oi oi-file" /> Nuevo</button>
+					<button type="submit" class="btn btn-seccess"> <i class="oi oi-document" /> Guardar</button>
+					<button type="button" class="btn btn-danger" @onclick="Eliminar"><i class="io io-trash" /> Eliminar</button>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</EditForm>
+
+@code {
+	[Parameter]
+	public int productoId { get; set; }
+	public Productos producto { get; set; } = new Productos();
+	public string? Mensaje { get; set; }
+	//public Detalle detalle { get; set; } = new Detalle();
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (productoId > 0)
+		{
+			this.producto.ProductoId = productoId;
+			await Buscar();
+		}
+	}
+
+	public async Task Buscar()
+	{
+		var ingresoEncotrado = await httpClient.GetFromJsonAsync<Productos>($"api/Productos/{producto.ProductoId}");
+
+		if (ingresoEncotrado != null)
+		{
+			this.producto = ingresoEncotrado;
+			StateHasChanged();
+		}
+		else
+		{
+			notificationService.ShowNotification(
+			titulo: "Error de Busqueda",
+			mensaje: "Registro no encontrado",
+			NotificationSeverity.Error);
+		}
+	}
+
+	public async void Guardar()
+	{
+		using var response = await httpClient.PostAsJsonAsync("api/Productos", producto);
+		if (!response.IsSuccessStatusCode)
+		{
+			notificationService.ShowNotification(
+				titulo: "Error",
+				mensaje: "Ocurrio un error y no fue posible guardad",
+				NotificationSeverity.Error);
+		}
+		else
+		{
+			var devuelto = await response.Content.ReadFromJsonAsync<Productos>();
+			if (devuelto is not null)
+			{
+				producto = devuelto;
+				StateHasChanged();
+			}
+		}
+	}
+
+	public void Nuevo()
+	{
+		this.producto = new Productos();
+		Mensaje = string.Empty;
+	}
+
+	public async Task Eliminar()
+	{
+		using var response = await httpClient.DeleteAsync($"api/Productos{producto.ProductoId}");
+		if (!response.IsSuccessStatusCode)
+		{
+			notificationService.ShowNotification(
+				titulo: "Error",
+				mensaje: "Ocurrio un error y no fue posible eliminar",
+				NotificationSeverity.Error);
+		}
+		else
+			Nuevo();
+	}
+}
