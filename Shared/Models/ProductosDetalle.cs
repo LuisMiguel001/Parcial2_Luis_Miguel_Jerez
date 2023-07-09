@@ -14,7 +14,7 @@ public class ProductosDetalle
 	public int ProductoId { get; set; }
 
 	[Required(ErrorMessage = "El producto es requerido")]
-	public string? Producto { get; set; }
+	public string Producto { get; set; }
 
 	public string? Descripcion { get; set; }
 
