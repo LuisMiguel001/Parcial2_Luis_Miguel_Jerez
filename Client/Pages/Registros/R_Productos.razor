@@ -1,4 +1,4 @@
-﻿@page "/Producto"
+﻿@page "/R_Productos"
 @inject HttpClient httpClient
 @inject NotificationService notificationService
 
@@ -13,7 +13,7 @@
 			<div class="card-body">
 				@*Buscar*@
 				<div class="col-xs-12 col-ms-12 col-md-8 col-lg-6 col-lx-4">
-					<InputNumber @bind-Value="producto.ProductoId" class="form-control" aria-describedby="buscarButton" />
+					<InputNumber @bind-Value="Producto.ProductoId" class="form-control" aria-describedby="buscarButton" />
 					<button @onclick="Buscar" class="btn btn-outline-primary" type="button" id="buscarButton">
 						<i class="oi oi-magnifying-glass"/>
 					</button>
@@ -22,15 +22,15 @@
 				@*Fecha*@
 				<div class="mb-3">
 					<label class="form-laber">Fecha</label>
-					<InputDate @bind-Value="producto.Fecha" class="form-control"></InputDate>
-					<ValidationMessage For="@(() => producto.Fecha)"/>
+					<InputDate @bind-Value="Producto.Fecha" class="form-control"></InputDate>
+					<ValidationMessage For="@(() => Producto.Fecha)"/>
 				</div>
 
 				@*Concepto*@
 				<div class="mb-3">
 					<label class="form-label">Concepto</label>
-					<InputText @bind-Value="producto.Concepto" class="form-control"></InputText>
-					<ValidationMessage For="@(() => producto.Concepto)" />
+					<InputText @bind-Value="Producto.Concepto" class="form-control"></InputText>
+					<ValidationMessage For="@(() => Producto.Concepto)" />
 				</div>
 
 			</div>
@@ -50,26 +50,26 @@
 @code {
 	[Parameter]
 	public int productoId { get; set; }
-	public Productos producto { get; set; } = new Productos();
-	public string? Mensaje { get; set; }
+	public Productos Producto { get; set; } = new Productos();
+	public string Mensaje { get; set; } = string.Empty;
 	//public Detalle detalle { get; set; } = new Detalle();
 
 	protected override async Task OnInitializedAsync()
 	{
 		if (productoId > 0)
 		{
-			this.producto.ProductoId = productoId;
+			this.Producto.ProductoId = productoId;
 			await Buscar();
 		}
 	}
 
 	public async Task Buscar()
 	{
-		var ingresoEncotrado = await httpClient.GetFromJsonAsync<Productos>($"api/Productos/{producto.ProductoId}");
+		var ingresoEncotrado = await httpClient.GetFromJsonAsync<Productos>($"api/Productos/{Producto.ProductoId}");
 
 		if (ingresoEncotrado != null)
 		{
-			this.producto = ingresoEncotrado;
+			this.Producto = ingresoEncotrado;
 			StateHasChanged();
 		}
 		else
@@ -83,7 +83,7 @@
 
 	public async void Guardar()
 	{
-		using var response = await httpClient.PostAsJsonAsync("api/Productos", producto);
+		using var response = await httpClient.PostAsJsonAsync("api/Productos", Producto);
 		if (!response.IsSuccessStatusCode)
 		{
 			notificationService.ShowNotification(
@@ -96,7 +96,7 @@
 			var devuelto = await response.Content.ReadFromJsonAsync<Productos>();
 			if (devuelto is not null)
 			{
-				producto = devuelto;
+				Producto = devuelto;
 				StateHasChanged();
 			}
 		}
@@ -104,13 +104,13 @@
 
 	public void Nuevo()
 	{
-		this.producto = new Productos();
+		this.Producto = new Productos();
 		Mensaje = string.Empty;
 	}
 
 	public async Task Eliminar()
 	{
-		using var response = await httpClient.DeleteAsync($"api/Productos{producto.ProductoId}");
+		using var response = await httpClient.DeleteAsync($"api/Productos{Producto.ProductoId}");
 		if (!response.IsSuccessStatusCode)
 		{
 			notificationService.ShowNotification(

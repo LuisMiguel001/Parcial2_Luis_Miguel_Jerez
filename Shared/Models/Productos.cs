@@ -12,12 +12,11 @@ public class Productos
 {
 	[Key]
 
-	[Required(ErrorMessage ="Debe introducir el productoId")]
+	[Required(ErrorMessage = "El ProductoId es requerido")]
 	public int ProductoId { get; set; }
 
 	public DateTime Fecha { get; set; }
 
-	[Required(ErrorMessage = "Debe introducir el concepto")]
 	public string? Concepto { get; set; }
 
 	[ForeignKey("ProductoId")]
