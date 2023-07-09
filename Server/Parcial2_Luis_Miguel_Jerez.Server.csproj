@@ -15,5 +15,10 @@
     <ProjectReference Include="..\Shared\Parcial2_Luis_Miguel_Jerez.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DAL\" />
+    <Folder Include="Data\" />
+  </ItemGroup>
+
 
 </Project>
