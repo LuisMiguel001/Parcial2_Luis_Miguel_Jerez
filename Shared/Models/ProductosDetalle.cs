@@ -9,6 +9,8 @@ namespace Parcial2_Luis_Miguel_Jerez.Shared.Models;
 
 public class ProductosDetalle
 {
+	[Key]
+
 	public int DetalleId { get; set; }
 
 	public int ProductoId { get; set; }
@@ -20,5 +22,7 @@ public class ProductosDetalle
 
 	[Required(ErrorMessage = "La cantidad es requerida")]
 	public int Cantidad { get; set; }
+
+	public int TipoId { get; set; }
 }
 

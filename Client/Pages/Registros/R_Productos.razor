@@ -42,10 +42,16 @@
 						<h3>Utilizados</h3>
 					</div>
 					<div class="row m-1">
-						@*Producto*@
+						@*TipoProducto*@
 						<div class="col-8">
 							<label>Producto:</label>
-							<InputSelect class="form-control" @bind-Value="detalle.Producto"></InputSelect>
+							<InputSelect class="form-select" @bind-Value="ProductoSeleccionado">
+								<option value="0" disabled selected> [Seleccione] </option>
+								@foreach (var tipo in TiposProductosList)
+								{
+									<option value="@tipo.TipoId">@tipo.Descripcion </option>
+								}
+							</InputSelect>
 						</div>
 
 						@*Cantidad*@
@@ -57,14 +63,14 @@
 						@*Boton agregar*@
 						<div class="col-2">
 							<br>
-							<button type="button" class="btn btn-primary input-group-text" @onclick="Guardar">
+							<button type="button" class="btn btn-primary input-group-text" @onclick="AgregarDetalle">
 								<span class="oi oi-plus">Agregar</span>
 							</button>
 						</div>
-						@*if (ValidacionDetalle.Length > 0)
+						@if (ValidacionDetalle.Length > 0)
 						{
 							<label class="text-danger">@ValidacionDetalle</label>
-						}*@
+						}
 					</div>
 
 					@*Tabla de detalles*@
@@ -77,16 +83,18 @@
 								<th>Cantidad</th>
 							</tr>
 						</thead>
+
 						<tbody>
-							@foreach (var detalle in Producto.ClientesDetalle)
+							@foreach (var detalle in Producto.ProductosDetalle)
 							{
 								<tr>
-									<td>@(DescripcionTipo(detalle.DetalleId))</td>
+									<td>@(DescripcionTipo(detalle.TipoId))</td>
 									<td>@detalle.Producto</td>
-									<td> <button @onclick="@(() => Eliminar())"><i class="oi oi-trash" /> Eliminar</button>   </td>
+									<td> <button @onclick="@(() => RemoverDetalle(detalle))"><i class="oi oi-trash" /> Eliminar</button>   </td>
 								</tr>
 							}
 						</tbody>
+
 					</table>
 					<hr />
 				</fieldset>
@@ -129,8 +137,14 @@
 	[Parameter]
 	public int productoId { get; set; }
 	public Productos Producto { get; set; } = new Productos();
-	public string Mensaje { get; set; } = string.Empty;
+	public int TipoProductoSeleccionado { get; set; } = 0;
+
+	public string Mensaje { get; set; } = string.Empty; 
+	public string ValidacionDetalle { get; set; } = string.Empty;
+
 	public ProductosDetalle detalle { get; set; } = new ProductosDetalle();
+	public IEnumerable<TipoProducto> TiposProductosList { get; set; } = Enumerable.Empty<TipoProducto>();
+	public string ProductoSeleccionado { get; set; } = string.Empty;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -175,6 +189,38 @@
 		}
 	}
 
+	public void AgregarDetalle()
+	{
+		if (!ValidarDetalle())
+			return;
+
+		Producto.ProductosDetalle.Add(new ProductosDetalle()
+			{
+				TipoId = TipoProductoSeleccionado,
+				Producto = ProductoSeleccionado
+			});
+		TipoProductoSeleccionado = 0;
+		ProductoSeleccionado = string.Empty;
+		StateHasChanged();
+	}
+
+	public bool ValidarDetalle()
+	{
+		ValidacionDetalle = string.Empty;
+		if (ProductoSeleccionado == string.Empty)
+		{
+			ValidacionDetalle = "El Tipo de Producto es obligatorio";
+		}
+
+		if (String.IsNullOrWhiteSpace(ProductoSeleccionado))
+		{
+			ValidacionDetalle += "El Producto es obligatorio";
+		}
+
+		return ValidacionDetalle.Length == 0;
+	}
+
+
 	public void Nuevo()
 	{
 		this.Producto = new Productos();
@@ -195,6 +241,16 @@
 
 	public string DescripcionTipo(int tipoId)
 	{
-		return detalle.Producto;
+		var tipoProducto = TiposProductosList.FirstOrDefault(t => t.TipoId == tipoId);
+
+		return tipoProducto!.Descripcion;
+	}
+
+	public void RemoverDetalle(ProductosDetalle detalleRemover)
+	{
+		TipoProductoSeleccionado = detalleRemover.TipoId;
+		ProductoSeleccionado = detalleRemover.Producto;
+
+		Producto.ProductosDetalle.Remove(detalleRemover);
 	}
 }

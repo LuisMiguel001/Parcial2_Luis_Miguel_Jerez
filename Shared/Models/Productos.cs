@@ -20,6 +20,6 @@ public class Productos
 	public string? Concepto { get; set; }
 
 	[ForeignKey("ProductoId")]
-	public ICollection<ProductosDetalle> ClientesDetalle { get; set; } = new List<ProductosDetalle>();
+	public ICollection<ProductosDetalle> ProductosDetalle { get; set; } = new List<ProductosDetalle>();
 }
 
