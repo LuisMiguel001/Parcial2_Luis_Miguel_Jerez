@@ -18,6 +18,21 @@
 						<i class="oi oi-magnifying-glass"/>
 					</button>
 				</div>
+
+				@*Fecha*@
+				<div class="mb-3">
+					<label class="form-laber">Fecha</label>
+					<InputDate @bind-Value="producto.Fecha" class="form-control"></InputDate>
+					<ValidationMessage For="@(() => producto.Fecha)"/>
+				</div>
+
+				@*Concepto*@
+				<div class="mb-3">
+					<label class="form-label">Concepto</label>
+					<InputText @bind-Value="producto.Concepto" class="form-control"></InputText>
+					<ValidationMessage For="@(() => producto.Concepto)" />
+				</div>
+
 			</div>
 
 			<div class="card-footer d-flex justify-content-center">
