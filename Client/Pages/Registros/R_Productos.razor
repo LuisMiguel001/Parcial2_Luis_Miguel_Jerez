@@ -44,7 +44,7 @@
 					<div class="row m-1">
 						@*TipoProducto*@
 						<div class="col-8">
-							<label>Producto:</label>
+							<label>Tipo Producto:</label>
 							<InputSelect class="form-select" @bind-Value="ProductoSeleccionado">
 								<option value="0" disabled selected> [Seleccione] </option>
 								@foreach (var tipo in TiposProductosList)
@@ -60,7 +60,7 @@
 							<InputNumber class="form-control" @bind-Value="detalle.Cantidad"></InputNumber>
 						</div>
 
-						@*Boton agregar*@
+						@*Boton Agregar*@
 						<div class="col-2">
 							<br>
 							<button type="button" class="btn btn-primary input-group-text" @onclick="AgregarDetalle">

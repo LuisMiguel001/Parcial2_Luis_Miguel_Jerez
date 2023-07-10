@@ -15,6 +15,8 @@ public class ProductosDetalle
 
 	public int ProductoId { get; set; }
 
+	public int TipoId { get; set; }
+	
 	[Required(ErrorMessage = "El producto es requerido")]
 	public string Producto { get; set; }
 
@@ -23,6 +25,5 @@ public class ProductosDetalle
 	[Required(ErrorMessage = "La cantidad es requerida")]
 	public int Cantidad { get; set; }
 
-	public int TipoId { get; set; }
 }
 
