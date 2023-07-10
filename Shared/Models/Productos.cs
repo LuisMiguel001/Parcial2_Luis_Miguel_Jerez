@@ -12,7 +12,6 @@ public class Productos
 {
 	[Key]
 
-	[Required(ErrorMessage = "El ProductoId es requerido")]
 	public int ProductoId { get; set; }
 
 	public DateTime Fecha { get; set; }

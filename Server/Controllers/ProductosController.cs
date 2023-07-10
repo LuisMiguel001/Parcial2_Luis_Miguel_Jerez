@@ -20,7 +20,7 @@ public class ProductosController : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<IEnumerable<Productos>>> GetProducto()
 	{
-		if(_context.Productos == null)
+		if (_context.Productos == null)
 		{
 			return NotFound();
 		}
@@ -30,12 +30,16 @@ public class ProductosController : ControllerBase
 	[HttpGet("{id}")]
 	public async Task<ActionResult<Productos>> GetProducto(int id)
 	{
-		if(_context.Productos == null)
+		if (_context.Productos == null)
 		{
 			return NotFound();
 		}
 
-		var producto = await _context.Productos.FindAsync(id);
+		var producto = await _context.Productos
+			.Include(c => c.ProductosDetalle)
+			.Where(c => c.ProductoId == id)
+			.FirstOrDefaultAsync();
+
 		if (producto == null)
 		{
 			return NotFound();
@@ -58,14 +62,14 @@ public class ProductosController : ControllerBase
 	[HttpDelete]
 	public async Task<ActionResult> DeleteProducto(int id)
 	{
-		if(_context.Productos == null)
+		if (_context.Productos == null)
 		{
 			return NotFound();
 		}
 
 		var producto = await _context.Productos.FindAsync(id);
 
-		if(producto == null)
+		if (producto == null)
 		{
 			return NotFound();
 		}

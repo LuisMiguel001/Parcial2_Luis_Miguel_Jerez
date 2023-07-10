@@ -1,4 +1,5 @@
 ﻿@page "/Producto"
+@page "/Producto/{ProductoId:int}"
 @inject HttpClient httpClient
 @*inject NotificationService notificationService*@
 
@@ -14,7 +15,7 @@
 				@*Buscar*@
 				<div class="col-xs-12 col-sm-12 col-md-8 col-lg-6 col-xl-4">
 					<label>Id</label>
-					<div class="input-group mb-3">						
+					<div class="input-group mb-3">
 						<InputNumber @bind-Value="Producto.ProductoId" class="form-control" aria-describedby="buscarButton" />
 						<button @onclick="Buscar" class="btn btn-outline-primary" type="button" id="buscarButton">
 							<i class="oi oi-magnifying-glass" />
@@ -45,11 +46,11 @@
 						@*TipoProducto*@
 						<div class="col-8">
 							<label>Tipo Producto:</label>
-							<InputSelect class="form-select" @bind-Value="ProductoSeleccionado">
+							<InputSelect class="form-select" @bind-Value="TipoProductoSeleccionado">
 								<option value="0" disabled selected> [Seleccione] </option>
 								@foreach (var tipo in TiposProductosList)
 								{
-									<option value="@tipo.TipoId">@tipo.Descripcion </option>
+									<option value="@tipo.TipoId"> "@tipo.Descripcion" </option>
 								}
 							</InputSelect>
 						</div>
@@ -90,11 +91,21 @@
 								<tr>
 									<td>@(DescripcionTipo(detalle.TipoId))</td>
 									<td>@detalle.Producto</td>
+									<td>@detalle.Descripcion</td>
+									<td>@detalle.Cantidad</td>
 									<td> <button @onclick="@(() => RemoverDetalle(detalle))"><i class="oi oi-trash" /> Eliminar</button>   </td>
 								</tr>
 							}
 						</tbody>
 
+						<div class="row justify-content-between">
+							<div class="col-8">
+								<label>Peso Total</label>
+								<div class="input-group mb-3">
+									<span class="form-control">@Producto.ProductosDetalle.Count()</span>
+								</div>
+							</div>
+						</div>
 					</table>
 					<hr />
 				</fieldset>
@@ -109,7 +120,7 @@
 						@*Producto*@
 						<div class="col-8">
 							<label>Producto:</label>
-							<InputText class="form-control" @bind-Value="detalle.Producto" />
+							<InputText class="form-control" @bind-Value="detalle.Producto"></InputText>
 						</div>
 
 						@*Cantidad*@
@@ -118,7 +129,7 @@
 							<InputNumber class="form-control" @bind-Value="detalle.Cantidad"></InputNumber>
 						</div>
 					</div>
-				</fieldset>				
+				</fieldset>
 			</div>
 
 			<div class="card-footer d-flex justify-content-center">
@@ -128,23 +139,27 @@
 					<button type="button" class="btn btn-outline-danger" @onclick="Eliminar"><i class="io io-trash" /> Eliminar</button>
 				</div>
 			</div>
-
 		</div>
 	</div>
+	@if (Mensaje.Length > 0)
+	{
+		<label class="text-danger">@Mensaje</label>
+	}
 </EditForm>
 
 @code {
 	[Parameter]
 	public int productoId { get; set; }
 	public Productos Producto { get; set; } = new Productos();
-	public int TipoProductoSeleccionado { get; set; } = 0;
 
-	public string Mensaje { get; set; } = string.Empty; 
+	public int TipoProductoSeleccionado { get; set; } = 0;
+	public string ProductoSeleccionado { get; set; } = string.Empty;
+
+	public string Mensaje { get; set; } = string.Empty;
 	public string ValidacionDetalle { get; set; } = string.Empty;
 
 	public ProductosDetalle detalle { get; set; } = new ProductosDetalle();
 	public IEnumerable<TipoProducto> TiposProductosList { get; set; } = Enumerable.Empty<TipoProducto>();
-	public string ProductoSeleccionado { get; set; } = string.Empty;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -170,25 +185,6 @@
 		}
 	}
 
-	public async void Guardar()
-	{
-		using var response = await httpClient.PostAsJsonAsync("api/Productos", Producto);
-		if (!response.IsSuccessStatusCode)
-		{
-			Mensaje = response.ReasonPhrase ?? "Error";
-			return;
-		}
-		else
-		{
-			var devuelto = await response.Content.ReadFromJsonAsync<Productos>();
-			if (devuelto is not null)
-			{
-				Producto = devuelto;
-				StateHasChanged();
-			}
-		}
-	}
-
 	public void AgregarDetalle()
 	{
 		if (!ValidarDetalle())
@@ -204,41 +200,6 @@
 		StateHasChanged();
 	}
 
-	public bool ValidarDetalle()
-	{
-		ValidacionDetalle = string.Empty;
-		if (ProductoSeleccionado == string.Empty)
-		{
-			ValidacionDetalle = "El Tipo de Producto es obligatorio";
-		}
-
-		if (String.IsNullOrWhiteSpace(ProductoSeleccionado))
-		{
-			ValidacionDetalle += "El Producto es obligatorio";
-		}
-
-		return ValidacionDetalle.Length == 0;
-	}
-
-
-	public void Nuevo()
-	{
-		this.Producto = new Productos();
-		Mensaje = string.Empty;
-	}
-
-	public async Task Eliminar()
-	{
-		using var response = await httpClient.DeleteAsync($"api/Productos{Producto.ProductoId}");
-		if (!response.IsSuccessStatusCode)
-		{
-			Mensaje = response.ReasonPhrase ?? "Error";
-			return;
-		}
-		else
-			Nuevo();
-	}
-
 	public string DescripcionTipo(int tipoId)
 	{
 		var tipoProducto = TiposProductosList.FirstOrDefault(t => t.TipoId == tipoId);
@@ -252,5 +213,60 @@
 		ProductoSeleccionado = detalleRemover.Producto;
 
 		Producto.ProductosDetalle.Remove(detalleRemover);
+	}
+
+	public bool ValidarDetalle()
+	{
+		ValidacionDetalle = string.Empty;
+		if (TipoProductoSeleccionado <= 0)
+		{
+			ValidacionDetalle = "El Tipo de Producto es obligatorio";
+		}
+
+		if (String.IsNullOrWhiteSpace(ProductoSeleccionado))
+		{
+			ValidacionDetalle += " ";
+		}
+
+		return ValidacionDetalle.Length == 0;
+	}
+
+	public async void Guardar()
+	{
+		using var response = await httpClient.PostAsJsonAsync("api/Productos", Producto);
+		if (!response.IsSuccessStatusCode)
+		{
+			Mensaje = response.ReasonPhrase ?? "Error";
+			return;
+		}
+		var devuelto = await response.Content.ReadFromJsonAsync<Productos>();
+		if (devuelto is not null)
+		{
+			Producto = devuelto;
+			StateHasChanged();
+		}
+
+	}
+
+	public void Nuevo()
+	{
+		this.Producto = new Productos();
+		Mensaje = string.Empty;
+		ValidacionDetalle = string.Empty;
+
+		TipoProductoSeleccionado = 0;
+		ProductoSeleccionado = string.Empty;
+	}
+
+	public async Task Eliminar()
+	{
+		using var response = await httpClient.DeleteAsync($"api/Productos{Producto.ProductoId}");
+		if (!response.IsSuccessStatusCode)
+		{
+			Mensaje = response.ReasonPhrase ?? "Error";
+			return;
+		}
+		else
+			Nuevo();
 	}
 }
